@@ -1,0 +1,49 @@
+---
+- name: Setting up webserver
+  hosts: webservergrp
+  become: yes  
+  tasks:
+    - name: Install apache2 package in slave1
+      apt:
+        name: apache2
+        state: present
+    - name: Start apache2 service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+    - name: Copy file to apache2 webserver
+      copy:
+        src: index.html
+        dest: /var/www/html/index.html
+
+- name: Setting dbserver
+  hosts: dbservergrp
+  become: yes
+  tasks: 
+    - name: Install mysql server in slave2
+      apt:
+        name: mysql-server
+        state: present
+    - name: Starting mysql-server
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+    - name: Installing pymysql
+      apt:
+        name: python3-pymysql 
+        state: present
+    - name: Creating the database
+      mysql_db:
+        name: subbu_db
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+    - name: Creating the user for database
+      mysql_user:
+        name: subash
+        password: subash
+        priv: 'subbu_db.*:ALL'
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+       
